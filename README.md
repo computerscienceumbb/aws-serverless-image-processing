@@ -1,73 +1,52 @@
 # Serverless Image Processing on AWS
 
 ## Project Overview
-This project implements a **serverless image processing solution** using AWS services. Users can upload images to an S3 bucket, which triggers a Lambda function to resize and process the image. Processed images are stored in a dedicated S3 bucket and cached globally via CloudFront. Optionally, image metadata is stored in a DynamoDB table.
 
-This solution demonstrates best practices for serverless architecture, event-driven workflows, and scalable infrastructure using AWS CloudFormation.
+This project implements a **serverless image processing solution** using AWS services. Users can upload images to an S3 bucket, which triggers a Lambda function that processes and resizes the images. The processed images are stored in a separate S3 bucket and optionally logged in a DynamoDB table.  
+
+The system uses **CloudFront** to cache processed images globally for low-latency access. This architecture is fully **event-driven, scalable, and serverless**, demonstrating AWS best practices for modern cloud applications.
+
+**Key benefits of this solution:**
+- Automatic image resizing and processing
+- Serverless architecture (no servers to manage)
+- Automatic scaling with AWS Lambda
+- Global content delivery with CloudFront
+- Optional metadata tracking with DynamoDB
 
 ---
 
 ## Architecture Diagram
+
 ![Architecture Diagram](architecture-diagram.png)
 
-**Architecture Components:**
-- **Upload Bucket (S3):** Users upload original images.
-- **Processed Bucket (S3):** Stores processed images.
-- **Lambda Function:** Processes images and stores metadata.
-- **DynamoDB (Optional):** Stores image metadata.
-- **API Gateway (Optional):** Exposes endpoints for image requests.
-- **CloudFront Distribution:** Provides caching for processed images globally.
-
-
-
-
+**Components:**
+1. **Upload Bucket (S3)** – Users upload original images.  
+2. **Processed Bucket (S3)** – Stores processed images.  
+3. **AWS Lambda** – Processes images and optionally stores metadata in DynamoDB.  
+4. **DynamoDB Table (Optional)** – Stores metadata such as image IDs and processed file names.  
+5. **API Gateway (Optional)** – Provides endpoints for processing images via HTTP requests.  
+6. **CloudFront Distribution** – Caches processed images for faster global access.  
 
 ---
 
 ## AWS Services Used
-- **Amazon S3** – Upload and processed buckets.  
-- **AWS Lambda** – Image processing function.  
-- **Amazon DynamoDB (Optional)** – Metadata storage.  
-- **Amazon API Gateway** – Optional REST API for image requests.  
-- **Amazon CloudFront** – Caching layer for low latency and global access.  
-- **IAM Roles** – Controls permissions for Lambda access to S3 and DynamoDB.  
+
+| Service | Role in Project |
+|---------|----------------|
+| **Amazon S3** | Upload bucket and processed bucket for storing images. |
+| **AWS Lambda** | Image processing function triggered by S3 or API Gateway. |
+| **Amazon DynamoDB** | Optional table to store image metadata (id, original_file, processed_file). |
+| **Amazon API Gateway** | Optional REST API to trigger image processing. |
+| **Amazon CloudFront** | Global caching for processed images. |
+| **IAM Roles** | Securely grants Lambda permissions to access S3 and DynamoDB. |
 
 ---
 
 ## Deployment Instructions
 
-1. **Upload Lambda Package**  
-   - Zip your `src/image_processor/` folder containing `app.py`.  
-   - Upload it to an S3 bucket (used in CloudFormation parameter `LambdaS3CodeBucket`).
+### Step 1: Package Lambda Function
 
-2. **Deploy CloudFormation Stack**  
-   - Go to AWS CloudFormation console.  
-   - Create a new stack using `templates/main.yaml`.  
-   - Provide parameters for:  
-     - `LambdaS3CodeBucket` – S3 bucket containing your Lambda zip.  
-     - `LambdaS3CodeKey` – S3 key for the Lambda zip file.
+Navigate to the Lambda source directory:
 
-3. **Test S3 Trigger**  
-   - Upload an image to the **Upload Bucket**.  
-   - Lambda will process the image and store it in **Processed Bucket**.  
-
-4. **Test API Gateway (Optional)**  
-   - POST to the API Gateway endpoint with JSON:  
-     ```json
-     {
-       "bucket": "upload-bucket-demo",
-       "key": "example.png"
-     }
-     ```
-   - Lambda will process and return processed image info.
-
-5. **Access via CloudFront**  
-   - Use the CloudFront distribution domain to access processed images globally with caching.
-
----
-
-## Usage Notes
-- Images are resized to **128x128 pixels** by default (adjustable in `app.py`).  
-- Metadata is stored in DynamoDB (optional) with `id`, `original_file`, and `processed_file`.  
-- CloudFront reduces latency and costs for repeated image access.  
-- This architecture is fully serverless, scalable, and follows AWS best practices.
+```bash
+cd src/image_processor
