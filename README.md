@@ -1,3 +1,4 @@
+
 # Serverless Image Processing on AWS
 
 ## Project Overview
@@ -50,3 +51,102 @@ Navigate to the Lambda source directory:
 
 ```bash
 cd src/image_processor
+````
+
+Zip the Lambda code:
+
+```bash
+zip -r ../../image_processor.zip .
+```
+
+---
+
+### Step 2: Deploy Using Deployment Script
+
+Navigate to the deployment directory:
+
+```bash
+cd deployment
+```
+
+Run the deployment script:
+
+```bash
+bash deploy.sh
+```
+
+This script will:
+
+* Upload the Lambda zip to a preconfigured S3 bucket
+* Deploy the CloudFormation stack
+* Create all required resources (buckets, Lambda, DynamoDB, CloudFront)
+
+---
+
+### Step 3: Test S3 Trigger
+
+1. Upload an image to the upload bucket (`grad-project-upload-bucket-5678`).
+2. Lambda will automatically process the image and save it to the processed bucket (`grad-project-processed-bucket`).
+3. Metadata is recorded in DynamoDB if enabled.
+
+---
+
+### Step 4: Test API Gateway Trigger (Optional)
+
+You can trigger the Lambda function via API Gateway using a POST request:
+
+**Request JSON Example:**
+
+```json
+{
+  "bucket": "grad-project-upload-bucket-5678",
+  "key": "example.png"
+}
+```
+
+**Expected Response:**
+
+```json
+{
+  "original": "example.png",
+  "processed": "processed-<uuid>.png"
+}
+```
+
+---
+
+### Step 5: Access Processed Images via CloudFront
+
+* Use the CloudFront distribution domain created by CloudFormation to access processed images globally.
+* CloudFront caches images to reduce latency and AWS costs for repeated requests.
+
+---
+
+## Running Tests
+
+Unit tests are included to verify that the Lambda function processes images correctly. The tests use **`moto`** to mock S3 and DynamoDB, so no actual AWS resources are required.
+
+1. Install dependencies:
+
+```bash
+pip install pytest moto Pillow boto3
+```
+
+2. Run the tests:
+
+```bash
+pytest tests/test_lambda.py
+```
+
+**Tests Included:**
+
+* S3-triggered Lambda processing
+* API Gateway-triggered Lambda processing
+* Verifies processed images exist in S3
+* Verifies metadata is written to DynamoDB
+
+```
+
+
+Do you want me to now **also write the final `tests/test_lambda.py` ready to copy-paste** so your repo is fully submission-ready?
+```
