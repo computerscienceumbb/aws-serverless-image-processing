@@ -27,22 +27,18 @@ def lambda_handler(event, context):
     """Main Lambda handler supporting S3 or API Gateway triggers."""
     records = event.get('Records', [])
     
-    # Determine if S3 event or API Gateway
     if records:  # S3 trigger
         responses = []
         for record in records:
             bucket = record['s3']['bucket']['name']
             key = record['s3']['object']['key']
 
-            # Get the image
             obj = s3.get_object(Bucket=bucket, Key=key)
             processed_data = process_image(obj['Body'].read())
 
-            # Upload processed image
             new_key = f"processed-{uuid.uuid4()}.png"
             s3.put_object(Bucket=PROCESSED_BUCKET, Key=new_key, Body=processed_data)
 
-            # Store metadata
             table.put_item(Item={
                 'id': str(uuid.uuid4()),
                 'original_file': key,
@@ -50,7 +46,25 @@ def lambda_handler(event, context):
             })
             responses.append({'original': key, 'processed': new_key})
 
-        return {
-            'statusCode': 200,
-            'body': json.dumps(responses)
-        }
+        return {'statusCode': 200, 'body': json.dumps(responses)}
+
+    else:  # API Gateway trigger
+        body = json.loads(event.get('body', '{}'))
+        bucket = body.get('bucket')
+        key = body.get('key')
+
+        if not bucket or not key:
+            return {'statusCode': 400, 'body': 'bucket and key required'}
+
+        obj = s3.get_object(Bucket=bucket, Key=key)
+        processed_data = process_image(obj['Body'].read())
+        new_key = f"processed-{uuid.uuid4()}.png"
+        s3.put_object(Bucket=PROCESSED_BUCKET, Key=new_key, Body=processed_data)
+
+        table.put_item(Item={
+            'id': str(uuid.uuid4()),
+            'original_file': key,
+            'processed_file': new_key
+        })
+
+        return {'statusCode': 200, 'body': json.dumps({'original': key, 'processed': new_key})}
