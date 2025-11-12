@@ -146,7 +146,3 @@ pytest tests/test_lambda.py
 * Verifies metadata is written to DynamoDB
 
 ```
-
-
-Do you want me to now **also write the final `tests/test_lambda.py` ready to copy-paste** so your repo is fully submission-ready?
-```
