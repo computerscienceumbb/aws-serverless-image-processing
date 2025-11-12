@@ -18,25 +18,7 @@ This solution demonstrates best practices for serverless architecture, event-dri
 - **API Gateway (Optional):** Exposes endpoints for image requests.
 - **CloudFront Distribution:** Provides caching for processed images globally.
 
----
 
-## Folder Structure
-
-aws-serverless-image-processing/
-│
-├─ README.md
-├─ architecture-diagram.png
-├─ src/
-│ └─ image_processor/
-│ └─ app.py # Lambda function code
-├─ templates/
-│ └─ main.yaml # CloudFormation template
-├─ deployment/ # Optional deployment scripts
-│ └─ deploy.sh
-├─ tests/ # Unit or integration tests
-│ └─ test_lambda.py
-├─ .gitignore
-└─ LICENSE
 
 
 
